@@ -11,6 +11,7 @@ func main() {
 	var featureBranchName string
 	var envBranchName string
 	var helpFlag bool
+	var dryFlag bool
 
 	// Setup SubCommands
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
@@ -21,6 +22,7 @@ func main() {
 	startCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name")
 	startCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name")
 	startCmd.BoolVar(&helpFlag, "help", false, "show help")
+	startCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	deployCmd := flag.NewFlagSet("deploy", flag.ExitOnError)
 	deployCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name")
@@ -28,6 +30,7 @@ func main() {
 	deployCmd.StringVar(&envBranchName, "env", "", "Env Branch Name")
 	deployCmd.StringVar(&envBranchName, "e", "", "Env Branch Name")
 	deployCmd.BoolVar(&helpFlag, "help", false, "show help")
+	deployCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	if len(os.Args) < 2 {
 		fmt.Println("Commands:")
@@ -67,7 +70,7 @@ func main() {
 			startCmd.PrintDefaults()
 			os.Exit(1)
 		} else {
-			cmdStart(featureBranchName)
+			cmdStart(featureBranchName, dryFlag)
 			return
 		}
 	case "deploy":
@@ -82,7 +85,7 @@ func main() {
 			deployCmd.PrintDefaults()
 			os.Exit(1)
 		} else {
-			cmdDeploy(envBranchName, featureBranchName)
+			cmdDeploy(envBranchName, featureBranchName, dryFlag)
 			return
 		}
 	}

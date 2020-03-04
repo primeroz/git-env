@@ -36,23 +36,25 @@ func (c Config) getProdRemote() string {
 	return string(stdout)[:len(stdout)-1]
 }
 
-func gitCommand(args ...string) {
+func gitCommand(dryRun bool, args ...string) {
 	// Run a generic Git Command
-	runCommand("git", args...)
+	runCommand(dryRun, "git", args...)
 }
 
-func runCommand(cmd string, args ...string) {
+func runCommand(dryRun bool, cmd string, args ...string) {
 	// Run a generic command
 	fmt.Printf("+ %s %s\n", cmd, strings.Join(args, " "))
-	c := exec.Command(cmd, args...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	c.Stdin = os.Stdin
+	if !dryRun {
+		c := exec.Command(cmd, args...)
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		c.Stdin = os.Stdin
 
-	err := c.Run()
+		err := c.Run()
 
-	if err != nil {
-		log.Fatalf("Failed executing command: %s %s", cmd, strings.Join(args, " "))
+		if err != nil {
+			log.Fatalf("Failed executing command: %s %s", cmd, strings.Join(args, " "))
+		}
 	}
 }
 
