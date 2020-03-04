@@ -2,12 +2,10 @@ package main
 
 import ()
 
-func cmdStart(args []string) {
-	if len(args) < 1 {
-		help("start")
-	}
-
-	newBranch := args[0]
+func cmdStart(newBranch string) {
+	//	if len(args) < 1 {
+	//		help("start")
+	//	}
 
 	gitCommand("checkout", config.ProdBranch)
 	gitCommand("pull", "--rebase", config.getProdRemote(), config.ProdBranch)
