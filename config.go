@@ -13,6 +13,7 @@ type Option struct {
 }
 
 type Config struct {
+	Mode          string
 	ProdBranch    string
 	OtherBranches []string
 	ProdDeployCmd string
@@ -21,6 +22,11 @@ type Config struct {
 var (
 	config  *Config
 	options = []Option{
+		{
+			Name:     "mode",
+			Question: "What type of workflow to use ? ( local (rebase) / push (rebase) / merge )",
+			Default:  "merge",
+		},
 		{
 			Name:     "prod",
 			Question: "What is your production branch?",
@@ -55,6 +61,7 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 		}
 		cfg[opt.Name] = s
 	}
+	config.Mode = cfg["mode"]
 	config.ProdBranch = cfg["prod"]
 	config.OtherBranches = strings.Split(cfg["other"], " ")
 	config.ProdDeployCmd = cfg["prod-deploy"]

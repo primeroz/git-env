@@ -64,6 +64,11 @@ func gitBranch() (string, error) {
 	return string(stdout), err
 }
 
+func gitRefsExists(ref string) (string, error) {
+	stdout, err := exec.Command("git", "show-ref", "--verify", "--quiet", "refs/heads/"+ref).Output()
+	return string(stdout), err
+}
+
 func getCurrentBranch_(gitBranch func() (string, error)) (string, error) {
 	// Get the current git branch
 	stdout, err := gitBranch()

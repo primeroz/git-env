@@ -40,12 +40,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	var err error
-	config, err = loadConfig()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	switch os.Args[1] {
 	case "init":
 		initCmd.Parse(os.Args[2:])
@@ -58,6 +52,15 @@ func main() {
 			cmdInit()
 			return
 		}
+	}
+
+	var err error
+	config, err = loadConfig()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	switch os.Args[1] {
 	case "start":
 		startCmd.Parse(os.Args[2:])
 
