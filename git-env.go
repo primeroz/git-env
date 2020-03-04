@@ -25,8 +25,8 @@ func main() {
 	startCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	deployCmd := flag.NewFlagSet("deploy", flag.ExitOnError)
-	deployCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name")
-	deployCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name")
+	deployCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name - defaults to current branch")
+	deployCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name - defaults to current branch")
 	deployCmd.StringVar(&envBranchName, "env", "", "Env Branch Name")
 	deployCmd.StringVar(&envBranchName, "e", "", "Env Branch Name")
 	deployCmd.BoolVar(&helpFlag, "help", false, "show help")
