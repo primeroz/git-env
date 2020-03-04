@@ -33,8 +33,9 @@ var (
 		},
 		{
 			Name:     "prod-deploy",
-			Question: "What command should be run to deploy to the production branch?",
-			Default:  "git checkout {{.env}} && git merge --no-ff {{.feature}}",
+			Question: "What command should be run to deploy to the production branch? - Default push to origin for MR",
+			Default:  "git checkout {{.env}} && git push origin {{.feature}}",
+			//Default:  "git checkout {{.env}} && git merge --no-ff {{.feature}}",
 		},
 	}
 )
