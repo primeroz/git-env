@@ -30,5 +30,10 @@ func cmdInit() {
 		}
 	}
 
+	// todo
+	// set rerere enable in --local
+	// set conflictstyle=diff3 in global
+	// do smth with pre-commit ?
+
 	fmt.Println("You're ready to go.")
 }
