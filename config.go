@@ -14,18 +14,37 @@ type Option struct {
 
 type Config struct {
 	Mode          string
+	DeployHook    string
 	ProdBranch    string
 	OtherBranches []string
 	ProdDeployCmd string
 }
 
 var (
-	config  *Config
+	config   *Config
+	settings = []Option{
+		{
+			Name:     "rerere.enabled",
+			Question: "Enable git.rerere in your local config ?",
+			Default:  "true",
+		},
+		{
+			Name:     "merge.conflictstyle",
+			Question: "Set conflictstyle in your global config",
+			Default:  "diff3",
+		},
+	}
 	options = []Option{
 		{
 			Name:     "mode",
 			Question: "What type of workflow to use ? ( local-rebase / push-rebase / merge )",
 			Default:  "merge",
+		},
+		{
+			Name:     "deploy-hook",
+			Question: "Run hook command , relative to root of repo, on deploy",
+			//Default:  "",
+			Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
 		},
 		{
 			Name:     "prod",
@@ -62,6 +81,7 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 		cfg[opt.Name] = s
 	}
 	config.Mode = cfg["mode"]
+	config.DeployHook = cfg["deploy-hook"]
 	config.ProdBranch = cfg["prod"]
 	config.OtherBranches = strings.Split(cfg["other"], " ")
 	config.ProdDeployCmd = cfg["prod-deploy"]
@@ -84,9 +104,17 @@ func getGitOption(opt string) (string, error) {
 
 func setGitOption(opt string, value string) (string, error) {
 	// Set a key=value option in the git config
-	err := exec.Command("git", "config", "--local", "--replace-all", configPrefix+"."+opt, value).Run()
+	err := exec.Command("git", "config", "--local", "--replace-all", opt, value).Run()
 	if err != nil {
 		return "", err
 	}
 	return "Option successfully set", nil
+}
+
+func setGitEnvOption(opt string, value string) (string, error) {
+	out, err := setGitOption(configPrefix+"."+opt, value)
+	if err != nil {
+		return "", err
+	}
+	return out, nil
 }

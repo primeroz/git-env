@@ -76,6 +76,17 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 		} else if config.Mode == "merge" {
 			gitCommand(dryRun, "merge", deployEnv)
 		}
+
+		if config.DeployHook != "" {
+			s := bytes.NewBufferString("")
+			err := template.Must(template.New("").Parse(config.DeployHook)).Execute(s, map[string]string{"env": deployEnv, "feature": featureBranch})
+			if err != nil {
+				panic(err)
+			}
+
+			runCommand(dryRun, "sh", "-c", s.String())
+		}
+
 		gitCommand(dryRun, "push", config.getProdRemote(), pushBranch)
 		gitCommand(dryRun, "checkout", featureBranch)
 		getGitlabMRUrl(dryRun, pushBranch, deployEnv)
