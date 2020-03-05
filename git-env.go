@@ -19,6 +19,7 @@ func main() {
 
 	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
 	pullCmd.BoolVar(&helpFlag, "help", false, "show help")
+	pullCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
 	//startBranchName := startCmd.String("branch", "", "Start a new feature branch")
