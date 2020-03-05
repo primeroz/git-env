@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"log"
-	//"strings"
 	"text/template"
 )
 
@@ -50,7 +49,7 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 		}
 	} else if config.Mode == "push-rebase" || config.Mode == "merge" {
 		pushBranch := featureBranch + "-" + deployEnv
-		var pushForce bool
+		pushFlags := []string{}
 
 		gitCommand(dryRun, "fetch")
 		gitCommand(dryRun, "checkout", deployEnv)
@@ -60,21 +59,17 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 		if exist == nil {
 			gitCommand(dryRun, "checkout", pushBranch)
 			gitCommand(dryRun, "reset", "--hard", featureBranch)
-			pushForce = true
+			pushFlags = append(pushFlags, "--force")
 		} else {
 			gitCommand(dryRun, "checkout", featureBranch)
 			gitCommand(dryRun, "checkout", "-b", pushBranch)
-			pushForce = false
-		}
-
-		if pushForce {
-			pushBranch = "+" + pushBranch
 		}
 
 		if config.Mode == "push-rebase" {
 			gitCommand(dryRun, "pull", "--rebase", config.getProdRemote(), deployEnv)
 		} else if config.Mode == "merge" {
-			gitCommand(dryRun, "merge", deployEnv)
+			// The --no-ff flag causes the merge to always create a new commit object, even if the merge could be performed with a fast-forward. This avoids losing information about the historical existence of a feature branch
+			gitCommand(dryRun, "merge", "--no-ff", deployEnv)
 		}
 
 		if config.DeployHook != "" {
@@ -87,7 +82,12 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 			runCommand(dryRun, "sh", "-c", s.String())
 		}
 
-		gitCommand(dryRun, "push", config.getProdRemote(), pushBranch)
+		// Build the push command with dynamic flags
+		push_args := []string{"push"}
+		push_args = append(push_args, pushFlags...)
+		push_args = append(push_args, config.getProdRemote())
+		push_args = append(push_args, pushBranch)
+		gitCommand(dryRun, push_args...)
 		gitCommand(dryRun, "checkout", featureBranch)
 		getGitlabMRUrl(dryRun, pushBranch, deployEnv)
 	}
