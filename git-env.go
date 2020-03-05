@@ -17,6 +17,9 @@ func main() {
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	initCmd.BoolVar(&helpFlag, "help", false, "show help")
 
+	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
+	pullCmd.BoolVar(&helpFlag, "help", false, "show help")
+
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
 	//startBranchName := startCmd.String("branch", "", "Start a new feature branch")
 	startCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name")
@@ -35,6 +38,7 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Commands:")
 		fmt.Println("  git env init                               - configure which ENV branches are being used")
+		fmt.Println("  git env pull                               - pull all the ENV branches")
 		fmt.Println("  git env start BRANCH_NAME                  - start a new feature branch")
 		fmt.Println("  git env deploy ENV_BRANCH [FEATURE_BRANCH] - deploy a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
 		os.Exit(1)
@@ -61,6 +65,17 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "pull":
+		pullCmd.Parse(os.Args[2:])
+
+		if helpFlag {
+			fmt.Println("pull all the ENV branches")
+			pullCmd.PrintDefaults()
+			os.Exit(0)
+		} else {
+			cmdPull(dryFlag)
+			return
+		}
 	case "start":
 		startCmd.Parse(os.Args[2:])
 
