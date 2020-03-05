@@ -91,3 +91,13 @@ func getCurrentBranch_(gitBranch func() (string, error)) (string, error) {
 func getCurrentBranch() (string, error) {
 	return getCurrentBranch_(gitBranch)
 }
+
+func getGitRemoteUrl() (string, error) {
+	stdout, err := exec.Command("git", "config", "--get", "remote.origin.url").Output()
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(stdout), nil
+}

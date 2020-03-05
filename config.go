@@ -24,7 +24,7 @@ var (
 	options = []Option{
 		{
 			Name:     "mode",
-			Question: "What type of workflow to use ? ( local (rebase) / push (rebase) / merge )",
+			Question: "What type of workflow to use ? ( local-rebase / push-rebase / merge )",
 			Default:  "merge",
 		},
 		{

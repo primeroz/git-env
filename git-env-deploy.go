@@ -25,7 +25,7 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 		log.Fatalf("Branch %s is an env branch. Can't merge an env branch into another env branch.", featureBranch)
 	}
 
-	if config.Mode == "local" {
+	if config.Mode == "local-rebase" {
 
 		// Rebase feature and env against upstream
 		gitCommand(dryRun, "checkout", featureBranch)
@@ -48,11 +48,14 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 			// In a non-production merge rebase against the remote env branch and merge
 			gitCommand(dryRun, "merge", featureBranch)
 		}
-	} else if config.Mode == "push" {
+	} else if config.Mode == "push-rebase" || config.Mode == "merge" {
 		pushBranch := featureBranch + "-" + deployEnv
 		var pushForce bool
 
 		gitCommand(dryRun, "fetch")
+		gitCommand(dryRun, "checkout", deployEnv)
+		gitCommand(dryRun, "pull")
+
 		_, exist := gitRefsExists(pushBranch)
 		if exist == nil {
 			gitCommand(dryRun, "checkout", pushBranch)
@@ -68,8 +71,11 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 			pushBranch = "+" + pushBranch
 		}
 
-		gitCommand(dryRun, "pull", "--rebase", config.getProdRemote(), deployEnv)
-		//gitCommand(dryRun, "push", strings.TrimRight(strings.Join(pushFlags, " "), " "), config.getProdRemote(), pushBranch)
+		if config.Mode == "push-rebase" {
+			gitCommand(dryRun, "pull", "--rebase", config.getProdRemote(), deployEnv)
+		} else if config.Mode == "merge" {
+			gitCommand(dryRun, "merge", deployEnv)
+		}
 		gitCommand(dryRun, "push", config.getProdRemote(), pushBranch)
 		gitCommand(dryRun, "checkout", featureBranch)
 	}
