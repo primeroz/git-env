@@ -78,5 +78,6 @@ func cmdDeploy(deployEnv string, featureBranch string, dryRun bool) {
 		}
 		gitCommand(dryRun, "push", config.getProdRemote(), pushBranch)
 		gitCommand(dryRun, "checkout", featureBranch)
+		getGitlabMRUrl(dryRun, pushBranch, deployEnv)
 	}
 }

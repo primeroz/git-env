@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -100,4 +102,33 @@ func getGitRemoteUrl() (string, error) {
 	}
 
 	return string(stdout), nil
+}
+
+func getGitlabMRUrl(dryRun bool, pushBranch string, deployEnv string) {
+	if !dryRun {
+		git_url, err := getGitRemoteUrl()
+
+		if err != nil {
+			fmt.Printf("+ Failed to generate MR Url, failed to fetch remote url\n")
+			return
+		}
+
+		re_git := regexp.MustCompile(`^git.+`)
+		if re_git.Match([]byte(git_url)) {
+			git_url = strings.TrimSuffix(strings.Replace(git_url, "git@gitlab.com:", "https://gitlab.com/", 1), ".git\n")
+		}
+
+		Url, err := url.Parse(git_url)
+		Url.Path += "/-/merge_requests/new"
+		params := url.Values{}
+		params.Add("merge_request[source_branch]", pushBranch)
+		params.Add("merge_request[target_branch]", deployEnv)
+		params.Add("merge_request[title]", "Merge "+pushBranch+" into "+deployEnv)
+		params.Add("merge_request[squash]", "false")
+		params.Add("merge_request[remove_source_branch]", "true")
+		Url.RawQuery = params.Encode()
+
+		fmt.Printf("+ Create a Giltab Merge Request for branch %s to environment %s\n+\n", pushBranch, deployEnv)
+		fmt.Printf("+ %s\n", Url.String())
+	}
 }
