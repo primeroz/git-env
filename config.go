@@ -37,14 +37,15 @@ var (
 	options = []Option{
 		{
 			Name:     "mode",
-			Question: "What type of workflow to use ? ( local-rebase / push-rebase / merge )",
-			Default:  "merge",
+			Question: "What type of workflow to use ? ( push / merge )",
+			Default:  "push",
 		},
 		{
 			Name:     "deploy-hook",
 			Question: "Run hook command , relative to root of repo, on deploy",
-			//Default:  "",
-			Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
+			Default:  "exit 0",
+			// Default:  "",
+			// Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
 		},
 		{
 			Name:     "prod",
