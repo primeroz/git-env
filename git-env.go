@@ -28,20 +28,20 @@ func main() {
 	startCmd.BoolVar(&helpFlag, "help", false, "show help")
 	startCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
-	deployCmd := flag.NewFlagSet("deploy", flag.ExitOnError)
-	deployCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name - defaults to current branch")
-	deployCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name - defaults to current branch")
-	deployCmd.StringVar(&envBranchName, "env", "", "Env Branch Name")
-	deployCmd.StringVar(&envBranchName, "e", "", "Env Branch Name")
-	deployCmd.BoolVar(&helpFlag, "help", false, "show help")
-	deployCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
+	pushCmd := flag.NewFlagSet("push", flag.ExitOnError)
+	pushCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name - defaults to current branch")
+	pushCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name - defaults to current branch")
+	pushCmd.StringVar(&envBranchName, "env", "", "Env Branch Name")
+	pushCmd.StringVar(&envBranchName, "e", "", "Env Branch Name")
+	pushCmd.BoolVar(&helpFlag, "help", false, "show help")
+	pushCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	if len(os.Args) < 2 {
 		fmt.Println("Commands:")
 		fmt.Println("  git env init                                     - configure which ENV branches are being used")
 		fmt.Println("  git env pull                                     - pull all the ENV branches")
 		fmt.Println("  git env start -b BRANCH_NAME                     - start a new feature branch ( it must match the regex (f|h|feature|hotfix)/[0-9]+.*")
-		fmt.Println("  git env deploy -e ENV_BRANCH -b [FEATURE_BRANCH] - deploy a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
+		fmt.Println("  git env push -e ENV_BRANCH -b [FEATURE_BRANCH] - push a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
 		os.Exit(1)
 	}
 
@@ -92,19 +92,19 @@ func main() {
 			cmdStart(featureBranchName, dryFlag)
 			return
 		}
-	case "deploy":
-		deployCmd.Parse(os.Args[2:])
+	case "push":
+		pushCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("deploy a feature branch to an ENV branch")
-			deployCmd.PrintDefaults()
+			fmt.Println("push a feature branch to an ENV branch")
+			pushCmd.PrintDefaults()
 			os.Exit(0)
 		} else if envBranchName == "" {
 			fmt.Println("Invalid Flags")
-			deployCmd.PrintDefaults()
+			pushCmd.PrintDefaults()
 			os.Exit(1)
 		} else {
-			cmdDeploy(envBranchName, featureBranchName, dryFlag)
+			cmdPush(envBranchName, featureBranchName, dryFlag)
 			return
 		}
 	}

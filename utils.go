@@ -104,7 +104,7 @@ func getGitRemoteUrl() (string, error) {
 	return string(stdout), nil
 }
 
-func getGitlabMRUrl(dryRun bool, pushBranch string, deployEnv string) {
+func getGitlabMRUrl(dryRun bool, pushBranch string, pushEnv string) {
 	if !dryRun {
 		git_url, err := getGitRemoteUrl()
 
@@ -122,13 +122,13 @@ func getGitlabMRUrl(dryRun bool, pushBranch string, deployEnv string) {
 		Url.Path += "/-/merge_requests/new"
 		params := url.Values{}
 		params.Add("merge_request[source_branch]", pushBranch)
-		params.Add("merge_request[target_branch]", deployEnv)
-		params.Add("merge_request[title]", "Merge "+pushBranch+" into "+deployEnv)
+		params.Add("merge_request[target_branch]", pushEnv)
+		params.Add("merge_request[title]", "Merge "+pushBranch+" into "+pushEnv)
 		params.Add("merge_request[squash]", "false")
 		params.Add("merge_request[remove_source_branch]", "true")
 		Url.RawQuery = params.Encode()
 
-		fmt.Printf("+ Create a Giltab Merge Request for branch %s to environment %s\n+\n", pushBranch, deployEnv)
+		fmt.Printf("+ Create a Giltab Merge Request for branch %s to environment %s\n+\n", pushBranch, pushEnv)
 		fmt.Printf("+ %s\n", Url.String())
 	}
 }
