@@ -38,10 +38,10 @@ func main() {
 
 	if len(os.Args) < 2 {
 		fmt.Println("Commands:")
-		fmt.Println("  git env init                               - configure which ENV branches are being used")
-		fmt.Println("  git env pull                               - pull all the ENV branches")
-		fmt.Println("  git env start BRANCH_NAME                  - start a new feature branch")
-		fmt.Println("  git env deploy ENV_BRANCH [FEATURE_BRANCH] - deploy a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
+		fmt.Println("  git env init                                     - configure which ENV branches are being used")
+		fmt.Println("  git env pull                                     - pull all the ENV branches")
+		fmt.Println("  git env start -b BRANCH_NAME                     - start a new feature branch ( it must match the regex (f|h|feature|hotfix)/[0-9]+.*")
+		fmt.Println("  git env deploy -e ENV_BRANCH -b [FEATURE_BRANCH] - deploy a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
 		os.Exit(1)
 	}
 

@@ -1,13 +1,20 @@
 package main
 
-import ()
+import (
+	"fmt"
+	"os"
+	"regexp"
+)
 
 func cmdStart(newBranch string, dryRun bool) {
-	gitCommand(dryRun, "checkout", config.ProdBranch)
-	if config.Mode == "merge" {
-		gitCommand(dryRun, "pull")
-	} else {
-		gitCommand(dryRun, "pull", "--rebase", config.getProdRemote(), config.ProdBranch)
+	re_branch := regexp.MustCompile("^(f|h|feature|hotfix)/[0-9]+.*$")
+
+	if !re_branch.Match([]byte(newBranch)) {
+		fmt.Printf("Branch %s does not match required regexp '^(f|h|feature|hotfix)/[0-9]+.*$'", newBranch)
+		os.Exit(1)
 	}
+
+	gitCommand(dryRun, "checkout", config.ProdBranch)
+	gitCommand(dryRun, "pull")
 	gitCommand(dryRun, "checkout", "-b", newBranch)
 }

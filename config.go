@@ -17,7 +17,6 @@ type Config struct {
 	DeployHook    string
 	ProdBranch    string
 	OtherBranches []string
-	ProdDeployCmd string
 }
 
 var (
@@ -36,11 +35,6 @@ var (
 	}
 	options = []Option{
 		{
-			Name:     "mode",
-			Question: "What type of workflow to use ? ( push / merge )",
-			Default:  "push",
-		},
-		{
 			Name:     "deploy-hook",
 			Question: "Run hook command , relative to root of repo, on deploy",
 			Default:  "exit 0",
@@ -56,12 +50,6 @@ var (
 			Name:     "other",
 			Question: "What other environment branches do you have?",
 			Default:  "stage dev",
-		},
-		{
-			Name:     "prod-deploy",
-			Question: "What command should be run to deploy to the production branch? - Default push to origin for MR",
-			Default:  "git push origin {{.feature}}",
-			//Default:  "git checkout {{.env}} && git merge --no-ff {{.feature}}",
 		},
 	}
 )
@@ -81,11 +69,10 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 		}
 		cfg[opt.Name] = s
 	}
-	config.Mode = cfg["mode"]
+	config.Mode = "merge"
 	config.DeployHook = cfg["deploy-hook"]
 	config.ProdBranch = cfg["prod"]
 	config.OtherBranches = strings.Split(cfg["other"], " ")
-	config.ProdDeployCmd = cfg["prod-deploy"]
 
 	return &config, nil
 }

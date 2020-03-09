@@ -61,5 +61,39 @@ func cmdInit() {
 	}
 	fmt.Println("PreCommit installed")
 
+	// Install other hooks
+	commit_msg_hook := `#!/usr/bin/env bash
+
+# set this to your active development branch
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+check_branch_regex='^(f/[0-9]+.*)'
+
+# Only check branches matching regex
+[[ ! ${current_branch} =~ ${check_branch_regex} ]] && exit 0
+
+# regex to validate in commit msg
+commit_regex='(f/[0-9]+|merge)'
+error_msg="Aborting commit. Your commit message is missing either a Feature Issue ('f/1111') or 'Merge'"
+
+if ! grep -iqE "$commit_regex" "$1"; then
+    echo "$error_msg" >&2
+    exit 1
+fi
+`
+	f, err := os.Create(".git/hooks/commit-msg")
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+	_, err = f.WriteString(commit_msg_hook)
+	if err != nil {
+		panic(err)
+	}
+	f.Sync()
+	f.Chmod(0750)
+
+	fmt.Println("Hooks Created")
+
 	fmt.Println("You're ready to go.")
 }
