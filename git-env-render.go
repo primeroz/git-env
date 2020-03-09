@@ -3,9 +3,26 @@ package main
 import (
 	//"log"
 	"fmt"
+	"strconv"
+	"time"
 )
 
-func cmdRender(branch string, dryRun bool) {
+func cmdRender(branch string, manifestsRepo string, dryRun bool) {
+
+	if config.isEnv(branch) {
+		gitCommand(dryRun, "checkout", branch)
+		gitCommand(dryRun, "pull")
+
+		commit, err := getGitRevparseBranch(branch)
+		if err != nil {
+			panic(err)
+		}
+
+		gitCommand(dryRun, "tag", "--sign", "--annotate", fmt.Sprintf("render/%s-%d", branch, time.Now().Unix()), "--message", strconv.Quote(fmt.Sprintf("Rendering Manifests for branch %s @ commit %s", branch, commit)))
+		gitCommand(dryRun, "push", "--tags")
+	} else {
+		fmt.Printf("Placeholder for ELSE")
+	}
 
 	// if branch is one of the ENV then pull the latest from remote
 	// else use the local HEAD for the branch but WARN ( err ? ) if not pushed
@@ -16,7 +33,6 @@ func cmdRender(branch string, dryRun bool) {
 	// should use an hook for this rather than hardcode
 	// push and create MR with description including TAG reference
 
-	fmt.Printf("Placeholder")
 	// var err error
 
 	// if featureBranch == "" {

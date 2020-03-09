@@ -22,11 +22,16 @@ func main() {
 	pullCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
-	//startBranchName := startCmd.String("branch", "", "Start a new feature branch")
 	startCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name")
 	startCmd.StringVar(&featureBranchName, "b", "", "Feature Branch Name")
 	startCmd.BoolVar(&helpFlag, "help", false, "show help")
 	startCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
+
+	renderCmd := flag.NewFlagSet("render", flag.ExitOnError)
+	renderCmd.StringVar(&featureBranchName, "branch", "", "Branch Name")
+	renderCmd.StringVar(&featureBranchName, "b", "", "Branch Name")
+	renderCmd.BoolVar(&helpFlag, "help", false, "show help")
+	renderCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	pushCmd := flag.NewFlagSet("push", flag.ExitOnError)
 	pushCmd.StringVar(&featureBranchName, "branch", "", "Feature Branch Name - defaults to current branch")
@@ -42,6 +47,7 @@ func main() {
 		fmt.Println("  git env pull                                     - pull all the ENV branches")
 		fmt.Println("  git env start -b BRANCH_NAME                     - start a new feature branch ( it must match the regex (f|h|feature|hotfix)/[0-9]+.*")
 		fmt.Println("  git env push -e ENV_BRANCH -b [FEATURE_BRANCH] - push a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
+		fmt.Println("  git env render -b BRANCH_NAME                     - render manifests into the manifests repo for given Branch")
 		os.Exit(1)
 	}
 
@@ -105,6 +111,21 @@ func main() {
 			os.Exit(1)
 		} else {
 			cmdPush(envBranchName, featureBranchName, dryFlag)
+			return
+		}
+	case "render":
+		renderCmd.Parse(os.Args[2:])
+
+		if helpFlag {
+			fmt.Println("Render a branch into the manifest repo ")
+			renderCmd.PrintDefaults()
+			os.Exit(0)
+		} else if featureBranchName == "" {
+			fmt.Println("Invalid Flags")
+			renderCmd.PrintDefaults()
+			os.Exit(1)
+		} else {
+			cmdRender(featureBranchName, config.RenderedManifestsRepo, dryFlag)
 			return
 		}
 	}

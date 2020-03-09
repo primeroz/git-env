@@ -94,6 +94,11 @@ func getCurrentBranch() (string, error) {
 	return getCurrentBranch_(gitBranch)
 }
 
+func getGitRevparseBranch(branch string) (string, error) {
+	stdout, err := exec.Command("git", "rev-parse", branch).Output()
+	return string(stdout), err
+}
+
 func getGitRemoteUrl() (string, error) {
 	stdout, err := exec.Command("git", "config", "--get", "remote.origin.url").Output()
 

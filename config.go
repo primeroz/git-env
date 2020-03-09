@@ -13,10 +13,11 @@ type Option struct {
 }
 
 type Config struct {
-	Mode          string
-	DeployHook    string
-	ProdBranch    string
-	OtherBranches []string
+	Mode                  string
+	RenderedManifestsRepo string
+	DeployHook            string
+	ProdBranch            string
+	OtherBranches         []string
 }
 
 var (
@@ -70,6 +71,7 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 		cfg[opt.Name] = s
 	}
 	config.Mode = "merge"
+	config.RenderedManifestsRepo = "git@gitlab.com:fciocchetti/git-env-rendered-kustomize.git"
 	config.DeployHook = cfg["deploy-hook"]
 	config.ProdBranch = cfg["prod"]
 	config.OtherBranches = strings.Split(cfg["other"], " ")
