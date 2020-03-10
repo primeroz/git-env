@@ -40,12 +40,7 @@ func main() {
 	pushCmd.BoolVar(&dryFlag, "dry", false, "dry-run - only print commands to stdout without running them")
 
 	if len(os.Args) < 2 {
-		fmt.Println("Commands:")
-		fmt.Println("  git env init                                     - configure which ENV branches are being used")
-		fmt.Println("  git env pull                                     - pull all the ENV branches")
-		fmt.Println("  git env start -b BRANCH_NAME                     - start a new feature branch ( it must match the regex (f|h|feature|hotfix)/[0-9]+.*")
-		fmt.Println("  git env push -e ENV_BRANCH -b [FEATURE_BRANCH] - push a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
-		fmt.Println("  git env render                     - render manifests into the manifests repo for current Branch")
+		help("")
 		os.Exit(1)
 	}
 
@@ -54,7 +49,7 @@ func main() {
 		initCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("configure the local git configs with the env branches settings")
+			help("init")
 			initCmd.PrintDefaults()
 			os.Exit(0)
 		} else {
@@ -74,7 +69,7 @@ func main() {
 		pullCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("pull all the ENV branches")
+			help("pull")
 			pullCmd.PrintDefaults()
 			os.Exit(0)
 		} else {
@@ -85,11 +80,12 @@ func main() {
 		startCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("start a new feature branch")
+			help("start")
 			startCmd.PrintDefaults()
 			os.Exit(0)
 		} else if featureBranchName == "" {
-			fmt.Println("Invalid Flags")
+			fmt.Println("Invalid Flags\n")
+			help("start")
 			startCmd.PrintDefaults()
 			os.Exit(1)
 		} else {
@@ -100,11 +96,12 @@ func main() {
 		pushCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("push a feature branch to an ENV branch")
+			help("push")
 			pushCmd.PrintDefaults()
 			os.Exit(0)
 		} else if envBranchName == "" {
-			fmt.Println("Invalid Flags")
+			fmt.Println("Invalid Flags\n")
+			help("push")
 			pushCmd.PrintDefaults()
 			os.Exit(1)
 		} else {
@@ -115,12 +112,34 @@ func main() {
 		renderCmd.Parse(os.Args[2:])
 
 		if helpFlag {
-			fmt.Println("Render a branch into the manifest repo ")
+			help("render")
 			renderCmd.PrintDefaults()
 			os.Exit(0)
 		} else {
 			cmdRender(dryFlag)
 			return
 		}
+	}
+}
+
+func help(arg string) {
+	switch arg {
+	case "init":
+		fmt.Println("configure the local git configs with the env branches settings")
+	case "pull":
+		fmt.Println("pull all the ENV branches")
+	case "start":
+		fmt.Println("start a new feature branch")
+	case "push":
+		fmt.Println("push a feature branch to an ENV branch")
+	case "render":
+		fmt.Println("Render a branch into the manifest repo ")
+	default:
+		fmt.Println("Commands:")
+		fmt.Println("  git env init                                     - configure which ENV branches are being used")
+		fmt.Println("  git env pull                                     - pull all the ENV branches")
+		fmt.Println("  git env start -b BRANCH_NAME                     - start a new feature branch ( it must match the regex (f|h|feature|hotfix)/[0-9]+.*")
+		fmt.Println("  git env push -e ENV_BRANCH -b [FEATURE_BRANCH] - push a feature branch to an ENV branch (FEATURE_BRANCH defaults to current branch)")
+		fmt.Println("  git env render                     - render manifests into the manifests repo for current Branch")
 	}
 }

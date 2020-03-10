@@ -16,12 +16,13 @@ type Config struct {
 	Mode                  string
 	RenderedManifestsRepo string
 	RenderCmd             string
-	DeployHook            string
-	ProdBranch            string
-	OtherBranches         []string
+	// DeployHook            string
+	ProdBranch    string
+	OtherBranches []string
 }
 
 var (
+	version  = "0.1"
 	config   *Config
 	settings = []Option{
 		{
@@ -36,19 +37,17 @@ var (
 		},
 	}
 	options = []Option{
-		{
+		/* {
 			Name:     "deploy-hook",
 			Question: "Run hook command , relative to root of repo, on deploy",
 			Default:  "exit 0",
 			// Default:  "",
 			// Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
-		},
+		}, */
 		{
 			Name:     "render-cmd",
-			Question: "render command",
+			Question: "Define the render command to run in the root of the repo",
 			Default:  "make OUTPUTDIR={{.OUTPUTDIR}}",
-			// Default:  "",
-			// Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
 		},
 		{
 			Name:     "prod",
@@ -81,7 +80,7 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 	config.Mode = "merge"
 	config.RenderedManifestsRepo = "git@gitlab.com:fciocchetti/git-env-rendered-kustomize.git"
 	config.RenderCmd = cfg["render-cmd"]
-	config.DeployHook = cfg["deploy-hook"]
+	// config.DeployHook = cfg["deploy-hook"]
 	config.ProdBranch = cfg["prod"]
 	config.OtherBranches = strings.Split(cfg["other"], " ")
 
