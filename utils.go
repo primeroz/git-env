@@ -94,8 +94,25 @@ func getCurrentBranch() (string, error) {
 	return getCurrentBranch_(gitBranch)
 }
 
+func gitRepoClone(dryRun bool, shallow bool, repo string, dir string) {
+	args := []string{}
+	args = append(args, "clone")
+	if shallow {
+		args = append(args, "--depth")
+		args = append(args, "1")
+	}
+	args = append(args, repo)
+	args = append(args, dir)
+	gitCommand(dryRun, args...)
+}
+
 func getGitRevparseBranch(branch string) (string, error) {
 	stdout, err := exec.Command("git", "rev-parse", branch).Output()
+	return string(stdout), err
+}
+
+func getGitRepoRootDir() (string, error) {
+	stdout, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
 	return string(stdout), err
 }
 
@@ -109,13 +126,17 @@ func getGitRemoteUrl() (string, error) {
 	return string(stdout), nil
 }
 
-func getGitlabMRUrl(dryRun bool, pushBranch string, pushEnv string) {
-	if !dryRun {
-		git_url, err := getGitRemoteUrl()
+func getGitlabMRUrl(dryRun bool, pushBranch string, pushEnv string, git_url string) {
+	var err error
 
-		if err != nil {
-			fmt.Printf("+ Failed to generate MR Url, failed to fetch remote url\n")
-			return
+	if !dryRun {
+		if git_url == "" {
+			git_url, err = getGitRemoteUrl()
+
+			if err != nil {
+				fmt.Printf("+ Failed to generate MR Url, failed to fetch remote url\n")
+				return
+			}
 		}
 
 		re_git := regexp.MustCompile(`^git.+`)
@@ -124,6 +145,11 @@ func getGitlabMRUrl(dryRun bool, pushBranch string, pushEnv string) {
 		}
 
 		Url, err := url.Parse(git_url)
+		if err != nil {
+			fmt.Printf("+ Failed to generate MR Url, failed to parse remote url\n")
+			return
+		}
+
 		Url.Path += "/-/merge_requests/new"
 		params := url.Values{}
 		params.Add("merge_request[source_branch]", pushBranch)

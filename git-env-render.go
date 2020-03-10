@@ -1,83 +1,75 @@
 package main
 
 import (
-	//"log"
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"strconv"
+	"text/template"
 	"time"
 )
 
-func cmdRender(branch string, manifestsRepo string, dryRun bool) {
-
-	if config.isEnv(branch) {
-		gitCommand(dryRun, "checkout", branch)
-		gitCommand(dryRun, "pull")
-
-		commit, err := getGitRevparseBranch(branch)
-		if err != nil {
-			panic(err)
-		}
-
-		gitCommand(dryRun, "tag", "--sign", "--annotate", fmt.Sprintf("render/%s-%d", branch, time.Now().Unix()), "--message", strconv.Quote(fmt.Sprintf("Rendering Manifests for branch %s @ commit %s", branch, commit)))
-		gitCommand(dryRun, "push", "--tags")
-	} else {
-		fmt.Printf("Placeholder for ELSE")
+func cmdRender(dryRun bool) {
+	branch, err := getCurrentBranch()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	// if branch is one of the ENV then pull the latest from remote
-	// else use the local HEAD for the branch but WARN ( err ? ) if not pushed
-	// Create a TAG out of it so we have an immutable placeholer for the rendering
-	// push the tag ( can i push if i did not push head yet ? )
-	// Clone Shallow Rendered repo in temp
-	// Render ( only the required env ? ) into the temp dir for the cloned repo
-	// should use an hook for this rather than hardcode
-	// push and create MR with description including TAG reference
+	tagName := fmt.Sprintf("render/%s-%d", branch, time.Now().Unix())
 
-	// var err error
+	gitCommand(dryRun, "pull")
+	commit, err := getGitRevparseBranch(branch)
+	if err != nil {
+		log.Fatalf("Failed to fetch Current HEAD commit id for branch %s", branch)
+	}
 
-	// if featureBranch == "" {
-	// 	featureBranch, err = getCurrentBranch()
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
+	if config.isEnv(branch) {
+		// IF branch is one of the ENVs then render from current upstream
 
-	// if !config.isEnv(pushEnv) {
-	// 	log.Fatalf("Branch %s is not an env branch. Can't merge a feature into it.", pushEnv)
-	// }
+		commitUpstream, err := getGitRevparseBranch(config.getProdRemote() + "/" + branch)
+		if err != nil {
+			log.Fatalf("Failed to fetch upstream commit id for branch %s", branch)
+		}
 
-	// if config.isEnv(featureBranch) {
-	// 	log.Fatalf("Branch %s is an env branch. Can't merge an env branch into another env branch.", featureBranch)
-	// }
+		if commit != commitUpstream {
+			log.Fatalf("Your branch of %s is not in sync with upstream", branch)
+		}
 
-	// // TODO - STOP / Break if any uncommited change
-	// // TODO - push branch
-	// pushBranch := featureBranch + "-TO-" + pushEnv
-	// pushFlags := []string{}
+		gitCommand(dryRun, "tag", "--sign", "--annotate", tagName, "--message", strconv.Quote(fmt.Sprintf("Rendering Manifests for branch %s @ commit %s", branch, commit)))
+	} else {
+		// IF branch is a development branch then render from current HEAD
 
-	// gitCommand(dryRun, "checkout", config.ProdBranch)
-	// gitCommand(dryRun, "pull")
-	// gitCommand(dryRun, "checkout", featureBranch)
-	// gitCommand(dryRun, "merge", "--no-ff", config.ProdBranch)
-	// gitCommand(dryRun, "push", config.getProdRemote(), featureBranch)
+		gitCommand(dryRun, "tag", "--annotate", tagName, "--message", strconv.Quote(fmt.Sprintf("Rendering Manifests for branch %s @ commit %s", branch, commit)))
+	}
 
-	// // Create the push branch
-	// _, exist := gitRefsExists(pushBranch)
-	// if exist == nil {
-	// 	gitCommand(dryRun, "checkout", pushBranch)
-	// 	gitCommand(dryRun, "reset", "--hard", featureBranch)
-	// 	pushFlags = append(pushFlags, "--force")
-	// } else {
-	// 	gitCommand(dryRun, "checkout", featureBranch)
-	// 	gitCommand(dryRun, "checkout", "-b", pushBranch)
-	// }
+	gitCommand(dryRun, "push", config.getProdRemote(), tagName)
 
-	// push_args := []string{"push"}
-	// push_args = append(push_args, pushFlags...)
-	// push_args = append(push_args, config.getProdRemote())
-	// push_args = append(push_args, pushBranch)
-	// gitCommand(dryRun, push_args...)
+	// Create Temp Dir for rendered manifests repo
+	dir, err := ioutil.TempDir("/tmp", "manifests-*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	// Clone, shallow, the manifests repo into tempdir
+	gitRepoClone(dryRun, true, config.RenderedManifestsRepo, dir)
+
+	// Render and Run RenderCmd
+	s := bytes.NewBufferString("")
+	err = template.Must(template.New("").Parse(config.RenderCmd)).Execute(s, map[string]string{"OUTPUTDIR": dir})
+	if err != nil {
+		panic(err)
+	}
+
+	// cd into root dir of repo and run command
+	rootDir, err := getGitRepoRootDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Chdir(rootDir)
+	runCommand(dryRun, "sh", "-c", s.String())
+
 	// getGitlabMRUrl(dryRun, pushBranch, pushEnv)
-
-	// gitCommand(dryRun, "checkout", featureBranch)
 }

@@ -49,7 +49,7 @@ func cmdPush(pushEnv string, featureBranch string, dryRun bool) {
 	push_args = append(push_args, config.getProdRemote())
 	push_args = append(push_args, pushBranch)
 	gitCommand(dryRun, push_args...)
-	getGitlabMRUrl(dryRun, pushBranch, pushEnv)
+	getGitlabMRUrl(dryRun, pushBranch, pushEnv, "")
 
 	gitCommand(dryRun, "checkout", featureBranch)
 }
