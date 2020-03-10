@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/pelletier/go-toml"
+	"io/ioutil"
 	"os"
 	"os/exec"
 )
@@ -12,9 +14,20 @@ func cmdInit() {
 	gitSettings := map[string]string{}
 	reader := bufio.NewReader(os.Stdin)
 
+	// Load config file if it exists
+	rootDir, _ := getGitRepoRootDir()
+	data, _ := ioutil.ReadFile(rootDir + "/.gitenvconfig")
+	config, _ := toml.Load(string(data))
+
 	// Manage git env options
 	for _, opt := range options {
-		fmt.Printf("%s [%s] ", opt.Question, opt.Default)
+		// Load value from file if available
+		fileDefaultValue := config.Get(opt.Name)
+		if fileDefaultValue != nil {
+			opt.Default = fileDefaultValue.(string)
+		}
+
+		fmt.Printf("%s - %s [%s] ", opt.Name, opt.Question, opt.Default)
 		value, err := reader.ReadString('\n')
 		if err != nil {
 			panic(err)

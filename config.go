@@ -47,9 +47,15 @@ var (
 			// Default: "make && git add -A && git diff-index --quiet HEAD || git commit -m \"deploy hook commit\"",
 		}, */
 		{
+			Name:     "rendered-repo",
+			Question: "Repo where to store the rendered files",
+			Default:  "",
+		},
+		{
 			Name:     "render-cmd",
 			Question: "Define the render command to run in the root of the repo",
-			Default:  "make OUTPUTDIR={{.OUTPUTDIR}}",
+			// Default:  "make OUTPUTDIR={{.OUTPUTDIR}}",
+			Default: "",
 		},
 		{
 			Name:     "prod",
@@ -90,7 +96,8 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 		cfg[opt.Name] = s
 	}
 	config.Mode = "merge"
-	config.RenderedManifestsRepo = "git@gitlab.com:fciocchetti/git-env-rendered-kustomize.git"
+	// config.RenderedManifestsRepo = "git@gitlab.com:fciocchetti/git-env-rendered-kustomize.git"
+	config.RenderedManifestsRepo = cfg["rendered-repo"]
 	config.RenderCmd = cfg["render-cmd"]
 	// config.DeployHook = cfg["deploy-hook"]
 	config.ProdBranch = cfg["prod"]

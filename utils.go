@@ -113,7 +113,7 @@ func getGitRevparseBranch(branch string) (string, error) {
 
 func getGitRepoRootDir() (string, error) {
 	stdout, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
-	return string(stdout), err
+	return strings.TrimSuffix(string(stdout), "\n"), err
 }
 
 func getGitRemoteUrl() (string, error) {
