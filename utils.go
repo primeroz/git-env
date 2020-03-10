@@ -67,6 +67,7 @@ func gitBranch() (string, error) {
 }
 
 func gitRefsExists(ref string) (string, error) {
+	// Check that a given REF exist
 	stdout, err := exec.Command("git", "show-ref", "--verify", "--quiet", "refs/heads/"+ref).Output()
 	return string(stdout), err
 }
@@ -95,6 +96,7 @@ func getCurrentBranch() (string, error) {
 }
 
 func gitRepoClone(dryRun bool, shallow bool, repo string, dir string) {
+	// Clone git repo to destination directory , optionally shallow
 	args := []string{}
 	args = append(args, "clone")
 	if shallow {
@@ -106,17 +108,44 @@ func gitRepoClone(dryRun bool, shallow bool, repo string, dir string) {
 	gitCommand(dryRun, args...)
 }
 
-func getGitRevparseBranch(branch string) (string, error) {
-	stdout, err := exec.Command("git", "rev-parse", branch).Output()
-	return string(stdout), err
+func getGitBranchCommitId(branch string, short bool) (string, error) {
+	// Get Commit id for given branch
+	args := []string{}
+	args = append(args, "rev-parse")
+	if short {
+		args = append(args, "--short")
+	}
+	args = append(args, branch)
+
+	stdout, err := exec.Command("git", args...).Output()
+	return strings.TrimSuffix(string(stdout), "\n"), err
+}
+
+func gitBranchesInSync(branch1 string, branch2 string) (bool, error) {
+	commit1, err := getGitBranchCommitId(branch1, false)
+	if err != nil {
+		return false, err
+	}
+	commit2, err := getGitBranchCommitId(branch2, false)
+	if err != nil {
+		return false, err
+	}
+
+	if commit1 == commit2 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 func getGitRepoRootDir() (string, error) {
+	// Get root directory for repo
 	stdout, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
 	return strings.TrimSuffix(string(stdout), "\n"), err
 }
 
 func getGitRemoteUrl() (string, error) {
+	// Get the Remote URL for the git repo
 	stdout, err := exec.Command("git", "config", "--get", "remote.origin.url").Output()
 
 	if err != nil {
@@ -124,6 +153,61 @@ func getGitRemoteUrl() (string, error) {
 	}
 
 	return string(stdout), nil
+}
+
+func gitHasUnstagedFiles() (bool, error) {
+	// Return true if there is any unstaged modified file
+	_, err := exec.Command("git", "diff", "--no-ext-diff", "--exit-code").Output()
+
+	if err != nil {
+		// Did the command fail because of an unsuccessful exit code
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if exitError.ExitCode() == 1 {
+				return true, nil
+			}
+		}
+		// It failed for other reasons
+		return false, err
+	} else {
+		return false, nil
+	}
+
+}
+
+func gitHasUntrackedFiles() (bool, error) {
+	// Return true if there is any untracked file in the repo
+	stdout, err := exec.Command("git", "ls-files", "--others").Output()
+
+	if err != nil {
+		return false, err
+	}
+
+	if string(stdout) != "" {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func gitHasAnyChange() (bool, error) {
+	// Check the status of the git repo with the `porcelain` command
+	// Any change will return True
+
+	cmd := exec.Command("git", "status", "--porcelain")
+	// if dir != "" {
+	// 	cmd.Dir = dir
+	// }
+	stdout, err := cmd.Output()
+
+	if err != nil {
+		return false, err
+	}
+
+	if string(stdout) != "" {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func getGitlabMRUrl(dryRun bool, pushBranch string, pushEnv string, git_url string) {
