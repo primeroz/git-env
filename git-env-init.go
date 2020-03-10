@@ -54,8 +54,14 @@ func cmdInit() {
 		}
 	}
 
+	// Set Version
+	_, err := setGitEnvOption("version", version)
+	if err != nil {
+		panic(err)
+	}
+
 	// Install pre-commit
-	err := exec.Command("pre-commit", "install").Run()
+	err = exec.Command("pre-commit", "install").Run()
 	if err != nil {
 		panic(err)
 	}

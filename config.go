@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -13,6 +14,7 @@ type Option struct {
 }
 
 type Config struct {
+	Version               string
 	Mode                  string
 	RenderedManifestsRepo string
 	RenderCmd             string
@@ -69,6 +71,16 @@ func loadConfig_(getOption func(string) (string, error)) (*Config, error) {
 	config := Config{}
 
 	cfg := map[string]string{}
+
+	// Check git env version against saved settings
+	v, err := getOption("version")
+	if err != nil {
+		return nil, err
+	}
+	if v != version {
+		return nil, errors.New(fmt.Sprintf("Configuration version does not match current version %s, please rerun 'git env init'", version))
+	}
+	config.Version = version
 
 	for _, opt := range options {
 		s, err := getOption(opt.Name)
