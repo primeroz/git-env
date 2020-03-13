@@ -55,7 +55,8 @@ func runCommand(dryRun bool, cmd string, args ...string) {
 		err := c.Run()
 
 		if err != nil {
-			log.Fatalf("Failed executing command: %s %s", cmd, strings.Join(args, " "))
+			log.Printf("Failed executing command: %s %s", cmd, strings.Join(args, " "))
+			panic(err)
 		}
 	}
 }
