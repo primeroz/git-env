@@ -121,6 +121,24 @@ func getGitBranchCommitId(branch string, short bool) (string, error) {
 	return strings.TrimSuffix(string(stdout), "\n"), err
 }
 
+func gitIsTag() (string, error) {
+	// Return tag name if the current git HEAD is a tag otherwise return ""
+	stdout, err := exec.Command("git", "describe", "--exact-match", "--tags", "HEAD").Output()
+
+	if err != nil {
+		// Did the command fail because of an unsuccessful exit code
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if exitError.ExitCode() == 128 {
+				return "", nil
+			}
+		}
+		// It failed for other reasons
+		return "", err
+	} else {
+		return strings.TrimSuffix(string(stdout), "\n"), nil
+	}
+}
+
 func gitBranchesInSync(branch1 string, branch2 string) (bool, error) {
 	commit1, err := getGitBranchCommitId(branch1, false)
 	if err != nil {
