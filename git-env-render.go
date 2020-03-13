@@ -129,10 +129,10 @@ func cmdRender(dryRun bool) {
 	os.Chdir(repoRootDir)
 	runCommand(dryRun, "sh", "-c", s.String())
 
-	//repoGitUrl, err := getGitRemoteUrl()
-	//if err != nil {
-	//	log.Fatal("Failed to get URL for repo")
-	//}
+	repoGitUrl, err := getGitRemoteUrl()
+	if err != nil {
+		log.Fatal("Failed to get URL for repo")
+	}
 
 	// If there are Changes push
 	defer os.Chdir(repoRootDir)
