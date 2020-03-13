@@ -152,7 +152,8 @@ func cmdRender(dryRun bool) {
 		gitCommand(dryRun, "add", "-A")
 		gitCommand(dryRun, "diff", "--cached")
 		gitCommand(dryRun, "status")
-		gitCommand(dryRun, "push", "origin", renderedRepoBranchName, "-m", strconv.Quote(fmt.Sprintf("Rendered Manifest from repo %s at tag %s", repoGitUrl, tagName)))
+		gitCommand(dryRun, "commit", "-m", strconv.Quote(fmt.Sprintf("Rendered Manifest from repo %s at tag %s", repoGitUrl, tagName)))
+		gitCommand(dryRun, "push", "origin", renderedRepoBranchName)
 		//getGitlabMRUrl(dryRun, pushBranch, pushEnv)
 	}
 }
